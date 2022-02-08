@@ -5,8 +5,8 @@ import {
   EmojiHappyIcon,
   HeartIcon,
   PaperAirplaneIcon,
-} from '@heroicons/react/outline';
-import { HeartIcon as HeartIconFilled } from '@heroicons/react/solid';
+} from "@heroicons/react/outline";
+import { HeartIcon as HeartIconFilled } from "@heroicons/react/solid";
 import {
   addDoc,
   collection,
@@ -17,70 +17,68 @@ import {
   query,
   serverTimestamp,
   setDoc,
-} from 'firebase/firestore';
-import { useSession } from 'next-auth/react';
-import { useEffect, useState } from 'react';
-import { db } from '../firebase';
-import Moment from 'react-moment';
+} from "firebase/firestore";
+import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
+import { db } from "../firebase";
+import Moment from "react-moment";
 
 const Post = ({ id, username, userImage, image, caption }) => {
   const { data: session } = useSession();
   const [comments, setComments] = useState([]);
-  const [comment, setComment] = useState('');
+  const [comment, setComment] = useState("");
   const [likes, setLikes] = useState([]);
   const [hasLiked, setHasLiked] = useState(false);
 
   useEffect(() => {
     return onSnapshot(
       query(
-        collection(db, 'posts', id, 'comments'),
-        orderBy('timeStamp', 'desc')
+        collection(db, "posts", id, "comments"),
+        orderBy("timeStamp", "desc"),
       ),
-      snapshot => setComments(snapshot.docs)
+      (snapshot) => setComments(snapshot.docs),
     );
   }, [db, id]);
 
   useEffect(
     () =>
-      onSnapshot(collection(db, 'posts', id, 'likes'), snapshot =>
-        setLikes(snapshot.docs)
+      onSnapshot(collection(db, "posts", id, "likes"), (snapshot) =>
+        setLikes(snapshot.docs),
       ),
-    [db, id]
+    [db, id],
   );
 
   useEffect(
     () =>
       setHasLiked(
-        likes.findIndex(like => like.id === session?.user?.uid) !== -1
+        likes.findIndex((like) => like.id === session?.user?.uid) !== -1,
       ),
-    [likes]
+    [likes],
   );
 
   const likePost = async () => {
     if (hasLiked) {
-      await deleteDoc(doc(db, 'posts', id, 'likes', session.user.uid));
+      await deleteDoc(doc(db, "posts", id, "likes", session.user.uid));
     } else {
-      await setDoc(doc(db, 'posts', id, 'likes', session.user.uid), {
+      await setDoc(doc(db, "posts", id, "likes", session.user.uid), {
         username: session.user.username,
       });
     }
   };
 
-  const sendComment = async e => {
+  const sendComment = async (e) => {
     e.preventDefault();
 
     const commentToSend = comment;
-    setComment('');
+    setComment("");
 
-    await addDoc(collection(db, 'posts', id, 'comments'), {
+    await addDoc(collection(db, "posts", id, "comments"), {
       comment: commentToSend,
       username: session.user.username,
       timeStamp: serverTimestamp(),
       userImage: session.user.image,
     });
   };
-
-  console.log(comments);
 
   return (
     <div className="bg-white my-7 border rounded-sm">
@@ -125,7 +123,7 @@ const Post = ({ id, username, userImage, image, caption }) => {
       {/* comments */}
       {comments.length > 0 && (
         <div className="ml-10 h-20 overflow-y-scroll scrollbar-thumb-black scrollbar-thin">
-          {comments.map(comment => (
+          {comments.map((comment) => (
             <div key={comment.id} className="flex items-center space-x-2 mb-3">
               <img
                 src={comment.data().userImage}
@@ -150,7 +148,7 @@ const Post = ({ id, username, userImage, image, caption }) => {
           <input
             type="text"
             value={comment}
-            onChange={e => setComment(e.target.value)}
+            onChange={(e) => setComment(e.target.value)}
             placeholder="Add a comment..."
             className="border-none flex-1 focus:ring-0 outline-none"
           />
